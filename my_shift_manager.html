@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f7fb">
+<title>わたしのシフト管理</title>
+<style>
+:root{--bg:#f7f7fb;--card:#fff;--ink:#222436;--muted:#73768a;--line:#e7e8f0;--accent:#6258d8;--accent2:#eeedff;--green:#18865c;--red:#c14b59;--shadow:0 5px 22px rgba(35,33,75,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;font-size:15px;line-height:1.5}
+header{padding:22px 18px 16px;background:linear-gradient(135deg,#f0efff,#fbfaff)}.wrap{max-width:760px;margin:auto}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:16px;background:#6258d8;color:white;display:grid;place-items:center;font-size:24px}.brand h1{font-size:21px;margin:0}.sub{color:var(--muted);font-size:12px;margin-top:3px}.tag{margin-left:auto;font-size:11px;background:#e4f7ee;color:#14764f;border-radius:99px;padding:5px 9px;font-weight:700}
+main{padding:14px;display:grid;gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}.section-title{font-size:17px;font-weight:800;margin:0 0 12px}.monthrow{display:flex;gap:8px;align-items:center}.monthrow input{flex:1}.monthnav{display:flex;gap:8px;margin-top:10px}.monthnav button{flex:1}
+input,select,textarea,button{font:inherit}input,select,textarea{width:100%;min-width:0;border:1px solid #dcdde8;border-radius:11px;padding:11px 12px;background:#fff;color:var(--ink)}input[type=checkbox]{width:auto;accent-color:var(--accent)}label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}button{border:0;border-radius:12px;padding:11px 13px;background:var(--accent);color:#fff;font-weight:750;cursor:pointer}button.secondary{background:#f0efff;color:#4b43b7}button.ghost{background:#f5f5f9;color:#44465a;border:1px solid var(--line)}button.danger{background:#fff0f1;color:#a12d3a;border:1px solid #f4d5d8}button:active{transform:scale(.99)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#f7f7fc;border-radius:14px;padding:12px}.stat .k{font-size:11px;color:var(--muted)}.stat .v{font-size:20px;font-weight:850;letter-spacing:-.4px;margin-top:4px;overflow-wrap:anywhere}.stat.big{grid-column:1/-1;background:var(--accent2)}.stat.big .v{font-size:27px;color:#4b43b7}.hint{font-size:12px;color:var(--muted);margin:10px 0 0}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.weekday{text-align:center;font-size:11px;color:var(--muted);padding:4px 0}.day{min-height:55px;padding:5px 2px;border-radius:11px;border:1px solid var(--line);background:#fff;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;font-size:12px}.day .num{font-weight:800}.day .dot{font-size:10px;color:var(--green);line-height:1.2}.day.work{background:#f0efff;border-color:#dad7ff}.day.selected{outline:2px solid var(--accent);outline-offset:1px}.day.off .dot{color:#a0a2b1}.day.sun .num{color:var(--red)}.day.sat .num{color:#426cc3}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{min-width:0}.full{grid-column:1/-1}.checkrow{display:flex;align-items:center;gap:9px;margin:0 0 12px}.checkrow label{margin:0;color:var(--ink);font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.actions button{flex:1;min-width:125px}.notice{padding:10px 12px;background:#f5f4ff;color:#5148b6;border-radius:12px;font-size:12px;margin-top:10px}
+summary{font-weight:800;cursor:pointer}details{border-top:1px solid var(--line);padding-top:13px;margin-top:13px}.bottom{color:var(--muted);font-size:11px;text-align:center;padding:0 20px 25px}.saved{font-size:12px;color:var(--green);min-height:18px;margin-top:8px}
+@media(min-width:650px){main{grid-template-columns:1.1fr .9fr;align-items:start} .calendar-card{grid-column:1;grid-row:1 / span 2}.summary-card{grid-column:2;grid-row:1}.edit-card{grid-column:2;grid-row:2}.settings-card{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><div class="wrap brand"><div class="logo">☑</div><div><h1>わたしのシフト管理</h1><div class="sub">シフト・給与・年間収入をまとめて管理</div></div><span class="tag">スマホ対応</span></div></header>
+<main class="wrap">
+<section class="card calendar-card">
+  <h2 class="section-title">📅 シフトカレンダー</h2>
+  <label for="month">表示する月</label><div class="monthrow"><input id="month" type="month"><button class="secondary" id="todayBtn">今月</button></div>
+  <div class="monthnav"><button class="ghost" id="prev">← 前月</button><button class="ghost" id="next">翌月 →</button></div>
+  <div style="height:14px"></div><div id="calendar" class="calendar"></div>
+  <p class="hint">勤務予定の日をタップすると、時間や休憩を編集できるよ。日付ごとの変更は自動保存されます。</p>
+  <div class="notice">🟣 基本設定：月・水・金 10:00〜17:00（休憩1時間）／木 10:00〜13:30（休憩なし）</div>
+</section>
+<section class="card summary-card">
+  <h2 class="section-title">💰 月の給与見込み</h2>
+  <div class="stats">
+    <div class="stat"><div class="k">勤務日数</div><div class="v" id="daysStat">—</div></div>
+    <div class="stat"><div class="k">実働時間</div><div class="v" id="hoursStat">—</div></div>
+    <div class="stat"><div class="k">基本給（額面）</div><div class="v" id="baseStat">—</div></div>
+    <div class="stat"><div class="k">交通費</div><div class="v" id="transStat">—</div></div>
+    <div class="stat big"><div class="k">額面合計の見込み</div><div class="v" id="totalStat">—</div></div>
+  </div>
+  <p class="hint">税金・社会保険料を引く前の概算です。実際の給与明細とは端数処理などで差が出る場合があります。</p>
+</section>
+<section class="card edit-card">
+  <h2 class="section-title">✏️ <span id="editDate">日付</span> の勤務</h2>
+  <div class="checkrow"><input id="isWork" type="checkbox"><label for="isWork">この日は勤務する</label></div>
+  <div id="editFields" class="formgrid">
+    <div class="field"><label for="start">開始時刻</label><input id="start" type="time" value="10:00"></div>
+    <div class="field"><label for="end">終了時刻</label><input id="end" type="time" value="17:00"></div>
+    <div class="field"><label for="breaks">休憩（分）</label><select id="breaks"><option value="0">なし</option><option value="30">30分</option><option value="60">1時間</option><option value="90">1時間30分</option><option value="120">2時間</option></select></div>
+    <div class="field"><label for="transport">この日の交通費（円）</label><input id="transport" type="number" min="0" step="1" value="0"></div>
+    <div class="field full"><label for="memo">メモ（任意）</label><input id="memo" maxlength="120" placeholder="早退・残業・シフト変更など"></div>
+  </div>
+  <div class="actions"><button id="saveDay">この日の内容を保存</button><button class="ghost" id="resetDay">基本シフトに戻す</button></div>
+  <div id="savedMsg" class="saved" aria-live="polite"></div>
+</section>
+<section class="card settings-card">
+  <h2 class="section-title">⚙️ 給与設定・データ管理</h2>
+  <div class="formgrid">
+    <div class="field"><label for="wage">時給（円）</label><input id="wage" type="number" min="0" step="1" value="1226"></div>
+    <div class="field"><label for="defaultTransport">通常の1日交通費（円）</label><input id="defaultTransport" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label for="bonus">年間ボーナス見込み（円）</label><input id="bonus" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label for="extra">今月の追加支給（円）</label><input id="extra" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label for="deduction">今月の控除（円）</label><input id="deduction" type="number" min="0" step="1" value="0"></div>
+  </div>
+  <p class="hint">通常の交通費を設定すると、勤務日に自動で入ります。日ごとに交通費を上書きすることもできます。</p>
+  <details><summary>📈 年間収入・月別履歴</summary><div style="height:10px"></div>
+    <div class="stats">
+      <div class="stat"><div class="k">今年の額面収入（保存済み月）</div><div class="v" id="yearStat">—</div></div>
+      <div class="stat"><div class="k">今年の勤務時間（保存済み月）</div><div class="v" id="yearHours">—</div></div>
+    </div>
+    <p class="hint">年間合計は、保存された各月のシフトを元に集計します。月のシフトを変えると自動更新されます。</p>
+    <div id="history"></div>
+  </details>
+  <details><summary>💾 バックアップ・復元</summary><p class="hint">データはこの端末・このブラウザ内に保存されます。ブラウザのデータ削除や端末変更に備えて、定期的にバックアップを保存してね。</p>
+    <div class="actions"><button class="secondary" id="exportBtn">バックアップを書き出す</button><button class="ghost" id="importBtn">バックアップを読み込む</button></div><input id="importFile" type="file" accept="application/json" hidden>
+    <div class="actions"><button class="danger" id="clearBtn">保存データをすべて削除</button></div>
+  </details>
+  <div id="dataMsg" class="saved" aria-live="polite"></div>
+</section>
+</main>
+<div class="bottom">個人用の試作品 v1.0 · データは外部サーバーに送信しません</div>
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const now=new Date();
+const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+$('month').value=thisMonth;
+let data={months:{},settings:{wage:1226,defaultTransport:0,bonus:0}};
+let selected='';
+let dirty=false;
+const fmt=n=>Math.round(n||0).toLocaleString('ja-JP');
+const key=(m,d)=>`${m}-${String(d).padStart(2,'0')}`;
+function load(){try{const raw=localStorage.getItem('myShiftManager_v1');if(raw){const parsed=JSON.parse(raw);if(parsed&&parsed.months)data=parsed;}}catch(e){}; data.settings ||= {wage:1226,defaultTransport:0,bonus:0}; Object.assign(data.settings,{wage:data.settings.wage??1226,defaultTransport:data.settings.defaultTransport??0,bonus:data.settings.bonus??0});}
+function persist(){try{localStorage.setItem('myShiftManager_v1',JSON.stringify(data));$('dataMsg').textContent='✓ この端末のブラウザに保存しました';}catch(e){$('dataMsg').textContent='保存できませんでした。バックアップを書き出してください。';}}
+function monthObj(m){data.months[m] ||= {days:{},extra:0,deduction:0};data.months[m].days ||= {};return data.months[m];}
+function base(d,m=$('month').value){const dt=new Date(Number(m.slice(0,4)),Number(m.slice(5,7))-1,d);const w=dt.getDay();if([1,3,5].includes(w))return {work:true,start:'10:00',end:'17:00',breaks:60,transport:Number(data.settings.defaultTransport)||0,memo:''};if(w===4)return {work:true,start:'10:00',end:'13:30',breaks:0,transport:Number(data.settings.defaultTransport)||0,memo:''};return {work:false,start:'',end:'',breaks:0,transport:0,memo:''};}
+function entry(d,m=$('month').value){const mo=monthObj(m);return mo.days[d] ? {...base(d,m),...mo.days[d]} : base(d,m);}
+function duration(e){if(!e.work||!e.start||!e.end)return 0;const [sh,sm]=e.start.split(':').map(Number),[eh,em]=e.end.split(':').map(Number);return Math.max(0,(eh*60+em-sh*60-sm-(Number(e.breaks)||0))/60);}
+function totals(m){const mo=monthObj(m);let days=0,hours=0,transport=0;const count=new Date(Number(m.slice(0,4)),Number(m.slice(5,7)),0).getDate();for(let d=1;d<=count;d++){const e=entry(d,m);if(e.work){days++;hours+=duration(e);transport+=Number(e.transport)||0;}}const basePay=Math.round(hours*Number(data.settings.wage||0));const total=basePay+Math.round(transport)+Number(mo.extra||0)-Number(mo.deduction||0);return {days,hours,transport,basePay,total};}
+function renderCalendar(){const m=$('month').value;if(!/^\d{4}-\d{2}$/.test(m))return;const first=new Date(Number(m.slice(0,4)),Number(m.slice(5,7))-1,1).getDay();const count=new Date(Number(m.slice(0,4)),Number(m.slice(5,7)),0).getDate();let out=['日','月','火','水','木','金','土'].map((w,i)=>`<div class="weekday" style="color:${i===0?'#c14b59':i===6?'#426cc3':''}">${w}</div>`).join('');for(let i=0;i<first;i++)out+='<div></div>';for(let d=1;d<=count;d++){const e=entry(d,m),date=key(m,d),dow=new Date(Number(m.slice(0,4)),Number(m.slice(5,7))-1,d).getDay();const cls=['day',e.work?'work':'off',selected===date?'selected':'',dow===0?'sun':'',dow===6?'sat':''].join(' ');out+=`<button type="button" class="${cls}" data-day="${d}"><span class="num">${d}</span><span class="dot">${e.work?`${duration(e)}h`:'休み'}</span></button>`;} $('calendar').innerHTML=out;$('calendar').querySelectorAll('[data-day]').forEach(b=>b.addEventListener('click',()=>selectDay(Number(b.dataset.day))));}
+function renderTotals(){const m=$('month').value;const t=totals(m);$('daysStat').textContent=`${t.days}日`;$('hoursStat').textContent=`${Number(t.hours.toFixed(2)).toLocaleString('ja-JP')}時間`;$('baseStat').textContent=`${fmt(t.basePay)}円`;$('transStat').textContent=`${fmt(t.transport)}円`;$('totalStat').textContent=`${fmt(t.total)}円`;renderHistory();}
+function renderHistory(){const m=$('month').value;const y=m.slice(0,4);let total=0,hours=0,rows=[];for(let mo=1;mo<=12;mo++){const mk=`${y}-${String(mo).padStart(2,'0')}`;if(data.months[mk]){const t=totals(mk);total+=t.total;hours+=t.hours;rows.push(`<button class="ghost" style="width:100%;text-align:left;margin:3px 0" data-month="${mk}">${mk}　${fmt(t.total)}円　/　${Number(t.hours.toFixed(2))}時間</button>`);}}$('yearStat').textContent=`${fmt(total)}円`;$('yearHours').textContent=`${Number(hours.toFixed(2)).toLocaleString('ja-JP')}時間`;$('history').innerHTML=rows.length?rows.join(''):'<p class="hint">この年の月別データはまだありません。</p>';$('history').querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',()=>{$('month').value=b.dataset.month;selectDay(1);}));}
+function loadSettings(){for(const id of ['wage','defaultTransport','bonus'])$(id).value=data.settings[id]??0;}
+function saveSettings(){data.settings.wage=Math.max(0,Number($('wage').value)||0);data.settings.defaultTransport=Math.max(0,Number($('defaultTransport').value)||0);data.settings.bonus=Math.max(0,Number($('bonus').value)||0);const m=$('month').value;const mo=monthObj(m);mo.extra=Math.max(0,Number($('extra').value)||0);mo.deduction=Math.max(0,Number($('deduction').value)||0);persist();renderCalendar();renderTotals();}
+function selectDay(d){const m=$('month').value;selected=key(m,d);const e=entry(d,m);$('editDate').textContent=`${m} / ${d}日`; $('isWork').checked=!!e.work;$('start').value=e.start||'10:00';$('end').value=e.end||'17:00';$('breaks').value=String(e.breaks??0);$('transport').value=String(e.transport??data.settings.defaultTransport??0);$('memo').value=e.memo||'';$('savedMsg').textContent='';toggleFields();renderCalendar();}
+function toggleFields(){$('editFields').style.opacity=$('isWork').checked?'1':'.45';['start','end','breaks','transport','memo','saveDay'].forEach(id=>{if($(id))$(id).disabled=!$('isWork').checked;});}
+function saveDay(){const m=$('month').value,d=Number(selected.slice(-2));const e={work:$('isWork').checked,start:$('start').value,end:$('end').value,breaks:Number($('breaks').value)||0,transport:Math.max(0,Number($('transport').value)||0),memo:$('memo').value.trim()};monthObj(m).days[d]=e;persist();$('savedMsg').textContent='✓ 保存しました。給与を再計算したよ！';renderCalendar();renderTotals();}
+function monthChanged(){const m=$('month').value;if(!/^\d{4}-\d{2}$/.test(m))return;monthObj(m);$('extra').value=data.months[m].extra||0;$('deduction').value=data.months[m].deduction||0;selectDay(1);renderTotals();}
+$('month').addEventListener('change',monthChanged);
+$('prev').addEventListener('click',()=>changeMonth(-1));$('next').addEventListener('click',()=>changeMonth(1));$('todayBtn').addEventListener('click',()=>{$('month').value=thisMonth;monthChanged();});
+function changeMonth(n){const [y,m]=$('month').value.split('-').map(Number);const d=new Date(y,m-1+n,1);$('month').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;monthChanged();}
+$('saveDay').addEventListener('click',saveDay);$('isWork').addEventListener('change',toggleFields);
+$('resetDay').addEventListener('click',()=>{const d=Number(selected.slice(-2)),m=$('month').value;delete monthObj(m).days[d];persist();selectDay(d);renderTotals();$('savedMsg').textContent='基本シフトに戻しました。';});
+['wage','defaultTransport','bonus','extra','deduction'].forEach(id=>$(id).addEventListener('change',saveSettings));
+$('exportBtn').addEventListener('click',()=>{saveSettings();const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-shift-backup.json';a.click();URL.revokeObjectURL(a.href);$('dataMsg').textContent='バックアップを書き出しました。';});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const parsed=JSON.parse(await f.text());if(!parsed.months||!parsed.settings)throw new Error('形式');data=parsed;persist();loadSettings();monthChanged();$('dataMsg').textContent='バックアップを読み込みました。';}catch(err){$('dataMsg').textContent='読み込めませんでした。バックアップファイルを確認してね。';}e.target.value='';});
+$('clearBtn').addEventListener('click',()=>{if(confirm('保存したシフト・設定をすべて削除します。この操作は取り消せません。先にバックアップを保存しましたか？')){localStorage.removeItem('myShiftManager_v1');data={months:{},settings:{wage:1226,defaultTransport:0,bonus:0}};loadSettings();monthChanged();$('dataMsg').textContent='保存データを削除しました。';}});
+load();loadSettings();monthObj(thisMonth);$('extra').value=monthObj(thisMonth).extra||0;$('deduction').value=monthObj(thisMonth).deduction||0;selectDay(1);renderTotals();
+})();
+</script>
+</body>
+</html>
